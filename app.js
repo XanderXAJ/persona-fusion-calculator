@@ -30,6 +30,23 @@ const arcanaRank = (function() {
   return arcanaRank_;
 })();
 
+const getCaseInsensitiveRegexFilter = function (regexExpr) {
+  var regex = new RegExp(regexExpr, 'i');
+
+  return function (value, index, array) {
+    var personas = value.sources;
+
+    // Search for match until we find one or run out of candidates
+    for (var i = 0, match = false; i < personas.length && !match; i++) {
+      match =
+        regex.test(personas[i].arcana) ||
+        regex.test(personas[i].level) ||
+        regex.test(personas[i].name);
+    }
+    return match;
+  };
+}
+
 // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ // \\ //
 
 angular.service('myAngularApp', function($route, $location, $window) {
@@ -257,7 +274,7 @@ CalcCtrl.prototype.paginateAndFilter = function() {
   if (this.pageNum < 0) this.pageNum = 0;
   if (this.pageNum > this.lastPage) this.pageNum = this.lastPage;
 
-  this.recipes = angular.Array.filter(this.allRecipes, this.filter);
+  this.recipes = angular.Array.filter(this.allRecipes, getCaseInsensitiveRegexFilter(this.filter));
   this.numRecipes = this.recipes.length;
   this.recipes = this.recipes.slice(
       this.pageNum * this.perPage,
